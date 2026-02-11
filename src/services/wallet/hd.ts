@@ -97,17 +97,12 @@ export function deriveTronWallet(index: number): WalletKeys {
                 privateKey: hdNode.privateKey.slice(2),
             };
         }
+        throw new Error('TronWeb returned empty address');
     } catch (e) {
-        // Log error but DO NOT CRASH. Fallback to Hex address.
-        // It's better to show an "invalid" address than to crash the server.
         console.error('Tron address conversion failed:', e);
+        // Strict Mode: Do not return fallback Hex address. Throw error instead.
+        throw new Error(`Failed to generate valid Tron address: ${(e as Error).message}`);
     }
-
-    // Fallback to Hex/Eth style address if conversion fails
-    return {
-        address: tronAddressHex,
-        privateKey: hdNode.privateKey.slice(2),
-    };
 }
 
 /**
