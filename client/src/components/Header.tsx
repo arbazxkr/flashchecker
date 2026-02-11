@@ -12,8 +12,8 @@ export default function Header({ connected }: HeaderProps) {
             <div className={styles.brand}>
                 <div className={styles.icon}>
                     <Image
-                        src="/logo.png"
-                        alt="Logo"
+                        src="/titan-symbol-white.png"
+                        alt="Titan"
                         width={32}
                         height={32}
                         priority

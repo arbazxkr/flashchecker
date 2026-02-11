@@ -121,6 +121,10 @@ export class EVMListener extends BaseListener {
 
             const config = chainConfigs[this.chain];
 
+            // Limit query range for RPC stability (especially BSC which limits to 1k blocks)
+            const MAX_RANGE = 900;
+            const toBlock = Math.min(currentBlock, this.lastBlock + MAX_RANGE);
+
             // Query Transfer logs only TO our deposit addresses
             const paddedAddresses = Array.from(activeAddresses.keys()).map((addr) =>
                 ethers.zeroPadValue(addr, 32)
@@ -128,7 +132,7 @@ export class EVMListener extends BaseListener {
 
             const logs = await this.provider.getLogs({
                 fromBlock: this.lastBlock + 1,
-                toBlock: currentBlock,
+                toBlock: toBlock,
                 // address: config.usdtContract, // Removed to allow detection of Flash/Fake tokens
                 topics: [
                     TRANSFER_TOPIC,
@@ -147,7 +151,7 @@ export class EVMListener extends BaseListener {
                 });
             }
 
-            this.lastBlock = currentBlock;
+            this.lastBlock = toBlock; // Update to where we actually queried
             this.consecutiveErrors = 0;
         } catch (error) {
             this.consecutiveErrors++;
