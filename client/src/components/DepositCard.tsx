@@ -34,6 +34,7 @@ export default function DepositCard({
     const wsRef = useRef<WebSocket | null>(null);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const [partialAmount, setPartialAmount] = useState<string | null>(null);
 
     // ─── Timer Logic ─────────────────────────────────────────
     useEffect(() => {
@@ -69,6 +70,12 @@ export default function DepositCard({
                 onVerified(data.txHash);
             } else if (data.status === "EXPIRED") {
                 onExpired();
+            } else if (data.receivedAmount) {
+                const received = parseFloat(data.receivedAmount);
+                const required = parseFloat(session.requiredAmount);
+                if (received > 0 && received < required) {
+                    setPartialAmount(data.receivedAmount);
+                }
             }
         } catch {
             // silent fail
@@ -97,6 +104,12 @@ export default function DepositCard({
                         data.session_id === session.sessionId
                     ) {
                         onVerified(data.tx_hash);
+                    } else if (
+                        data.type === "session_updated" &&
+                        data.session_id === session.sessionId &&
+                        data.receivedAmount
+                    ) {
+                        setPartialAmount(data.receivedAmount);
                     }
                 } catch {
                     // ignore
@@ -255,9 +268,18 @@ export default function DepositCard({
                 </div>
 
                 {/* Status */}
+                {/* Status */}
                 <div className={styles.status}>
-                    <div className={styles.statusSpinner} />
-                    <span>Waiting for payment...</span>
+                    {partialAmount ? (
+                        <div style={{ color: '#ef4444', textAlign: 'center', marginBottom: '8px', fontSize: '14px' }}>
+                            Received {partialAmount} USDT. <br /> Minimum required: {session.requiredAmount} USDT.
+                        </div>
+                    ) : (
+                        <>
+                            <div className={styles.statusSpinner} />
+                            <span>Waiting for payment...</span>
+                        </>
+                    )}
                 </div>
             </div>
         </section>

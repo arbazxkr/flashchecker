@@ -2,7 +2,7 @@ import { Chain } from '@prisma/client';
 import { BaseListener } from './base';
 import { chainConfigs } from '../../config/chains';
 import { USDT_CONTRACTS, USDT_DECIMALS } from '../../config/constants';
-import { getActiveDepositAddresses, verifySession } from '../session';
+import { getActiveDepositAddresses, verifySession, updateReceivedAmount } from '../session';
 import { emitSessionVerified } from '../../lib/websocket';
 import { env } from '../../config/env';
 
@@ -140,6 +140,7 @@ export class TronListener extends BaseListener {
                         amount,
                         sessionId,
                     });
+                    await updateReceivedAmount(sessionId, amount.toString());
                     continue;
                 }
 

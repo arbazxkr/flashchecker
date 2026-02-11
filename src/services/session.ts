@@ -4,6 +4,7 @@ import { env } from '../config/env';
 import { deriveWallet, getNextDerivationIndex } from './wallet';
 import { CreateSessionResponse } from '../types';
 import { logger } from '../utils/logger';
+import { emitSessionUpdated } from '../lib/websocket';
 
 /**
  * Creates a new deposit session:
@@ -131,5 +132,30 @@ export async function verifySession(
             error: (error as Error).message,
         });
         return false;
+    }
+}
+
+/**
+ * Update the received amount for a session (e.g. for partial payments).
+ * Does not change status to VERIFIED unless logic elsewhere decides to.
+ */
+export async function updateReceivedAmount(
+    sessionId: string,
+    amount: string
+): Promise<void> {
+    try {
+        await prisma.depositSession.update({
+            where: { id: sessionId },
+            data: {
+                receivedAmount: parseFloat(amount),
+            },
+        });
+        logger.info('Session amount updated (partial)', { sessionId, amount });
+        emitSessionUpdated(sessionId, { receivedAmount: amount });
+    } catch (error) {
+        logger.error('Failed to update session amount', {
+            sessionId,
+            error: (error as Error).message,
+        });
     }
 }

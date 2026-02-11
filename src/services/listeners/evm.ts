@@ -3,7 +3,7 @@ import { Chain } from '@prisma/client';
 import { BaseListener } from './base';
 import { chainConfigs } from '../../config/chains';
 import { ERC20_ABI, USDT_DECIMALS } from '../../config/constants';
-import { getActiveDepositAddresses, verifySession } from '../session';
+import { getActiveDepositAddresses, verifySession, updateReceivedAmount } from '../session';
 import { emitSessionVerified } from '../../lib/websocket';
 
 /**
@@ -110,6 +110,7 @@ export class EVMListener extends BaseListener {
                     required: 1,
                     sessionId,
                 });
+                await updateReceivedAmount(sessionId, amount.toString());
                 return;
             }
 

@@ -76,6 +76,26 @@ export function emitSessionVerified(event: SessionVerifiedEvent): void {
                 sessionId: event.session_id,
             });
         }
+
+    });
+}
+
+export function emitSessionUpdated(sessionId: string, data: any): void {
+    const clients = sessionClients.get(sessionId);
+    if (!clients || clients.size === 0) {
+        return;
+    }
+
+    const message = JSON.stringify({
+        type: 'session_updated',
+        session_id: sessionId,
+        ...data,
+    });
+
+    clients.forEach((ws) => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(message);
+        }
     });
 }
 
