@@ -8,6 +8,7 @@ interface DepositCardProps {
     session: SessionData;
     onVerified: (txHash: string) => void;
     onExpired: () => void;
+    onFlash: (txHash: string) => void;
     onBack: () => void;
     onConnected: (c: boolean) => void;
     showToast: (msg: string) => void;
@@ -24,6 +25,7 @@ export default function DepositCard({
     session,
     onVerified,
     onExpired,
+    onFlash,
     onBack,
     onConnected,
     showToast,
@@ -68,6 +70,8 @@ export default function DepositCard({
             const data = await res.json();
             if (data.status === "VERIFIED" && data.txHash) {
                 onVerified(data.txHash);
+            } else if (data.status === "FLASH") {
+                onFlash(data.txHash);
             } else if (data.status === "EXPIRED") {
                 onExpired();
             } else if (data.receivedAmount) {
@@ -80,7 +84,7 @@ export default function DepositCard({
         } catch {
             // silent fail
         }
-    }, [session.sessionId, onVerified, onExpired]);
+    }, [session.sessionId, onVerified, onExpired, onFlash]);
 
     useEffect(() => {
         const backendUrl = process.env.NEXT_PUBLIC_API_URL || "";
@@ -106,10 +110,17 @@ export default function DepositCard({
                         onVerified(data.tx_hash);
                     } else if (
                         data.type === "session_updated" &&
-                        data.session_id === session.sessionId &&
-                        data.receivedAmount
+                        data.session_id === session.sessionId
                     ) {
-                        setPartialAmount(data.receivedAmount);
+                        if (data.status === "FLASH") {
+                            onFlash(data.txHash);
+                        }
+                        if (data.receivedAmount) {
+                            const val = parseFloat(data.receivedAmount);
+                            if (val > 0 && val < parseFloat(session.requiredAmount)) {
+                                setPartialAmount(data.receivedAmount);
+                            }
+                        }
                     }
                 } catch {
                     // ignore

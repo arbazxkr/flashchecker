@@ -5,12 +5,13 @@ import Header from "@/components/Header";
 import ChainSelector from "@/components/ChainSelector";
 import DepositCard from "@/components/DepositCard";
 import VerifiedCard from "@/components/VerifiedCard";
+import FlashCard from "@/components/FlashCard";
 import ExpiredCard from "@/components/ExpiredCard";
 import Toast from "@/components/Toast";
 import styles from "./page.module.css";
 
 export type Chain = "ETHEREUM" | "BSC" | "TRON" | "SOLANA";
-export type Step = "select" | "deposit" | "verified" | "expired";
+export type Step = "select" | "deposit" | "verified" | "expired" | "flash";
 
 export interface SessionData {
   sessionId: string;
@@ -71,6 +72,11 @@ export default function Home() {
     setStep("verified");
   };
 
+  const handleFlash = (hash: string) => {
+    setTxHash(hash);
+    setStep("flash");
+  };
+
   const handleExpired = () => {
     setStep("expired");
   };
@@ -105,6 +111,7 @@ export default function Home() {
           <DepositCard
             session={session}
             onVerified={handleVerified}
+            onFlash={handleFlash}
             onExpired={handleExpired}
             onBack={handleBack}
             onConnected={setConnected}
@@ -114,6 +121,14 @@ export default function Home() {
 
         {step === "verified" && (
           <VerifiedCard
+            chain={chain!}
+            txHash={txHash}
+            onNewSession={handleNewSession}
+          />
+        )}
+
+        {step === "flash" && (
+          <FlashCard
             chain={chain!}
             txHash={txHash}
             onNewSession={handleNewSession}

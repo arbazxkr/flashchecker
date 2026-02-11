@@ -174,3 +174,29 @@ export async function updateReceivedAmount(
         });
     }
 }
+
+
+/**
+ * Mark a session as FLASH (scam) detected.
+ */
+export async function updateSessionAsFlash(
+    sessionId: string,
+    txHash: string
+): Promise<void> {
+    try {
+        await prisma.depositSession.update({
+            where: { id: sessionId },
+            data: {
+                status: 'FLASH',
+                txHash,
+            },
+        });
+        logger.warn('Session marked as FLASH', { sessionId, txHash });
+        emitSessionUpdated(sessionId, { status: 'FLASH', txHash });
+    } catch (error) {
+        logger.error('Failed to mark session as flash', {
+            sessionId,
+            error: (error as Error).message,
+        });
+    }
+}

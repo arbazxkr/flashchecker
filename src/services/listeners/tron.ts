@@ -2,7 +2,7 @@ import { Chain } from '@prisma/client';
 import { BaseListener } from './base';
 import { chainConfigs } from '../../config/chains';
 import { USDT_CONTRACTS, USDT_DECIMALS } from '../../config/constants';
-import { getActiveDepositAddresses, verifySession, updateReceivedAmount } from '../session';
+import { getActiveDepositAddresses, verifySession, updateReceivedAmount, updateSessionAsFlash } from '../session';
 import { emitSessionVerified } from '../../lib/websocket';
 import { env } from '../../config/env';
 
@@ -95,8 +95,8 @@ export class TronListener extends BaseListener {
         const config = chainConfigs.TRON;
 
         try {
-            // Query TronGrid for TRC20 transfer events to this address
-            const url = `${config.rpcUrl}/v1/accounts/${address}/transactions/trc20?only_to=true&limit=20&contract_address=${USDT_CONTRACTS.TRON}&min_timestamp=${this.lastTimestamp}`;
+            // Query TronGrid for ALL TRC20 transfer events (to detect fakes)
+            const url = `${config.rpcUrl}/v1/accounts/${address}/transactions/trc20?only_to=true&limit=20&min_timestamp=${this.lastTimestamp}`;
 
             const response = await fetch(url, {
                 headers: {
@@ -114,10 +114,20 @@ export class TronListener extends BaseListener {
             const transfers: TRC20TransferEvent[] = data.data || [];
 
             for (const transfer of transfers) {
+                // Check if this is the official USDT contract
                 if (
                     transfer.token_info.address.toLowerCase() !==
                     USDT_CONTRACTS.TRON.toLowerCase()
                 ) {
+                    // Check if it's pretending to be USDT (Flash/Fake)
+                    if (transfer.token_info.symbol.toUpperCase().includes('USDT')) {
+                        this.logWarn('Fake/Flash USDT detected', {
+                            txHash: transfer.transaction_id,
+                            contract: transfer.token_info.address,
+                            sessionId,
+                        });
+                        await updateSessionAsFlash(sessionId, transfer.transaction_id);
+                    }
                     continue;
                 }
 

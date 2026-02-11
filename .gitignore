@@ -3,3 +3,8 @@ dist/
 .env
 *.log
 .DS_Store
+titan.exchange/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
