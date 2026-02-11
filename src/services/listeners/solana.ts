@@ -52,10 +52,12 @@ export class SolanaListener extends BaseListener {
 
 
     private isPolling = false;
+    private processedSignatures = new Set<string>();
 
     private async pollTransfers(): Promise<void> {
         if (!this.connection || this.isPolling) return;
         this.isPolling = true;
+
 
         try {
             const activeAddresses = await getActiveDepositAddresses('SOLANA');
@@ -116,6 +118,8 @@ export class SolanaListener extends BaseListener {
 
     private async processTransaction(signature: string): Promise<void> {
         if (!this.connection) return;
+        if (this.processedSignatures.has(signature)) return;
+        this.processedSignatures.add(signature);
 
         try {
             const tx = await this.connection.getParsedTransaction(signature, {
