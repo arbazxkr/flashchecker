@@ -65,9 +65,28 @@ export default function VerifiedCard({
                     </svg>
                 </div>
 
-                <h2 className={styles.title}>Payment Verified</h2>
+                <h2 className={styles.title}>Payment Successful</h2>
+
+                <div style={{
+                    background: 'rgba(34, 197, 94, 0.1)',
+                    color: '#22c55e',
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    margin: '8px 0 16px'
+                }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    Safe to Deal
+                </div>
+
                 <p className={styles.subtitle}>
-                    Your USDT deposit has been confirmed on-chain
+                    Transaction confirmed on blockchain
                 </p>
 
                 {/* Details */}
