@@ -173,7 +173,7 @@
 
 /* QR */
 .qrContainer {
-    padding: 16px;
+    padding: 8px;
     background: #ffffff;
     border-radius: var(--r-lg);
     display: flex;

@@ -1,8 +1,10 @@
 "use client";
 
+import QRCode from "qrcode";
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { SessionData } from "@/app/page";
 import styles from "./DepositCard.module.css";
+
 
 interface DepositCardProps {
     session: SessionData;
@@ -300,75 +302,16 @@ export default function DepositCard({
     );
 }
 
-/* ─── Simple QR Code Generator ──────────────────────────────
-   Minimal QR-like pattern (replaced by real lib in production)
-   ─────────────────────────────────────────────────────────── */
+/* ─── QR Code Generator ───────────────────────────────────── */
 function drawQR(canvas: HTMLCanvasElement, text: string) {
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const size = canvas.width;
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, size, size);
-
-    // Generate a simple visual representation
-    const cellSize = 6;
-    const margin = 18;
-    const gridSize = Math.floor((size - margin * 2) / cellSize);
-
-    ctx.fillStyle = "#100e0a";
-
-    // Create deterministic pattern from address
-    let hash = 0;
-    for (let i = 0; i < text.length; i++) {
-        hash = (hash << 5) - hash + text.charCodeAt(i);
-        hash |= 0;
-    }
-
-    // Draw finder patterns (corners)
-    const drawFinder = (x: number, y: number) => {
-        const s = cellSize;
-        // Outer
-        ctx.fillRect(margin + x * s, margin + y * s, 7 * s, 7 * s);
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(margin + (x + 1) * s, margin + (y + 1) * s, 5 * s, 5 * s);
-        ctx.fillStyle = "#100e0a";
-        ctx.fillRect(margin + (x + 2) * s, margin + (y + 2) * s, 3 * s, 3 * s);
-    };
-
-    drawFinder(0, 0);
-    ctx.fillStyle = "#100e0a";
-    drawFinder(gridSize - 7, 0);
-    ctx.fillStyle = "#100e0a";
-    drawFinder(0, gridSize - 7);
-    ctx.fillStyle = "#100e0a";
-
-    // Fill data area with seeded random pattern
-    const seededRandom = (seed: number) => {
-        const x = Math.sin(seed) * 10000;
-        return x - Math.floor(x);
-    };
-
-    for (let row = 0; row < gridSize; row++) {
-        for (let col = 0; col < gridSize; col++) {
-            // Skip finder patterns
-            if (
-                (row < 8 && col < 8) ||
-                (row < 8 && col >= gridSize - 8) ||
-                (row >= gridSize - 8 && col < 8)
-            ) {
-                continue;
-            }
-
-            const seed = hash + row * gridSize + col;
-            if (seededRandom(seed) > 0.55) {
-                ctx.fillRect(
-                    margin + col * cellSize,
-                    margin + row * cellSize,
-                    cellSize,
-                    cellSize
-                );
-            }
-        }
-    }
+    QRCode.toCanvas(canvas, text, {
+        width: 250,
+        margin: 1,
+        color: {
+            dark: "#000000",
+            light: "#ffffff",
+        },
+    }, (error: Error | null | undefined) => {
+        if (error) console.error(error);
+    });
 }
