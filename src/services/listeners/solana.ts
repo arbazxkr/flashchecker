@@ -229,15 +229,15 @@ export class SolanaListener extends BaseListener {
                         // Always update received amount so UI shows partial payments
                         await updateReceivedAmount(sessionId, amount.toString());
 
-                        if (amount < env.REQUIRED_AMOUNT_USDT) {
-                            this.logWarn('Transfer amount below minimum', {
+                        if (amount < 0.99) {
+                            this.logWarn('Transfer amount below minimum (0.99)', {
                                 amount,
-                                required: env.REQUIRED_AMOUNT_USDT,
+                                required: 0.99,
                                 sessionId,
                             });
-                            continue;
+                            await updateReceivedAmount(sessionId, amount.toString());
+                            return;
                         }
-
                         // Wait for finality
                         const config = chainConfigs.SOLANA;
                         await this.waitForFinality(signature, config.confirmations);

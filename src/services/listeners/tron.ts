@@ -183,8 +183,8 @@ export class TronListener extends BaseListener {
             sessionId,
         });
 
-        if (amount < 1) {
-            this.logWarn('Transfer amount below required minimum', {
+        if (amount < 0.99) {
+            this.logWarn('Transfer amount below minimum (0.99)', {
                 amount,
                 sessionId,
             });
