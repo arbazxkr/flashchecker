@@ -52,12 +52,13 @@ export default function Home() {
       if (!res.ok) throw new Error("Failed to create session");
 
       const data = await res.json();
+      const session = data.data || data; // Backend wraps in { success, data }
       setSession({
-        sessionId: data.sessionId,
-        depositAddress: data.depositAddress,
+        sessionId: session.sessionId,
+        depositAddress: session.depositAddress,
         chain: selectedChain,
-        requiredAmount: data.requiredAmount,
-        expiresAt: data.expiresAt,
+        requiredAmount: session.requiredAmount,
+        expiresAt: session.expiresAt,
       });
       setStep("deposit");
     } catch {

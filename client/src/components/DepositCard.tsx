@@ -67,7 +67,8 @@ export default function DepositCard({
         try {
             const res = await fetch(`/api/session/${session.sessionId}`);
             if (!res.ok) return;
-            const data = await res.json();
+            const json = await res.json();
+            const data = json.data || json; // Backend wraps in { success, data }
             if (data.status === "VERIFIED" && data.txHash) {
                 onVerified(data.txHash);
             } else if (data.status === "FLASH") {
