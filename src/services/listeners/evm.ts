@@ -3,7 +3,7 @@ import { Chain } from '@prisma/client';
 import { BaseListener } from './base';
 import { chainConfigs } from '../../config/chains';
 import { USDT_DECIMALS } from '../../config/constants';
-import { getActiveDepositAddresses, verifySession, updateReceivedAmount } from '../session';
+import { getActiveDepositAddresses, verifySession, updateReceivedAmount, updateSessionAsFlash } from '../session';
 import { emitSessionVerified } from '../../lib/websocket';
 
 // Transfer(address,address,uint256) event signature
@@ -129,7 +129,7 @@ export class EVMListener extends BaseListener {
             const logs = await this.provider.getLogs({
                 fromBlock: this.lastBlock + 1,
                 toBlock: currentBlock,
-                address: config.usdtContract,
+                // address: config.usdtContract, // Removed to allow detection of Flash/Fake tokens
                 topics: [
                     TRANSFER_TOPIC,
                     null,
@@ -178,6 +178,19 @@ export class EVMListener extends BaseListener {
             const sessionId = activeAddresses.get(to);
             if (!sessionId) return;
 
+            const config = chainConfigs[this.chain];
+
+            // Check for Flash/Fake tokens (Contract mismatch)
+            if (log.address.toLowerCase() !== config.usdtContract.toLowerCase()) {
+                this.logWarn('Flash/Fake USDT detected', {
+                    contract: log.address,
+                    sessionId,
+                    txHash
+                });
+                await updateSessionAsFlash(sessionId, txHash);
+                return;
+            }
+
             const decimals = USDT_DECIMALS[this.chain];
             const amount = parseFloat(ethers.formatUnits(value, decimals));
 
@@ -199,7 +212,8 @@ export class EVMListener extends BaseListener {
                 return;
             }
 
-            const config = chainConfigs[this.chain];
+            // config is already declared above
+
             this.log('Waiting for confirmations', {
                 required: config.confirmations,
                 txHash,

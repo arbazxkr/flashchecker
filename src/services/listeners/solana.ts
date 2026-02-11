@@ -8,7 +8,7 @@ import { BaseListener } from './base';
 import { chainConfigs } from '../../config/chains';
 import { USDT_CONTRACTS, USDT_DECIMALS } from '../../config/constants';
 import { env } from '../../config/env';
-import { getActiveDepositAddresses, verifySession, updateReceivedAmount } from '../session';
+import { getActiveDepositAddresses, verifySession, updateReceivedAmount, updateSessionAsFlash } from '../session';
 import { emitSessionVerified } from '../../lib/websocket';
 
 /**
@@ -141,6 +141,36 @@ export class SolanaListener extends BaseListener {
 
             const activeAddresses = await getActiveDepositAddresses('SOLANA');
             if (activeAddresses.size === 0) return;
+
+            // Check for Flash/Fake tokens via postTokenBalances
+            if (tx.meta && tx.meta.postTokenBalances) {
+                const postKey = tx.meta.postTokenBalances;
+                const preKey = tx.meta.preTokenBalances || [];
+
+                for (const post of postKey) {
+                    if (post.owner && activeAddresses.has(post.owner)) {
+                        // If mint is NOT official USDT
+                        if (post.mint !== USDT_CONTRACTS.SOLANA) {
+                            // Check if balance increased
+                            const pre = preKey.find(p => p.accountIndex === post.accountIndex && p.mint === post.mint);
+                            const preAmount = pre?.uiTokenAmount?.uiAmount || 0;
+                            const postAmount = post.uiTokenAmount?.uiAmount || 0;
+
+                            if (postAmount > preAmount) {
+                                const sessionId = activeAddresses.get(post.owner);
+                                if (sessionId) {
+                                    this.logWarn('Flash/Fake USDT detected', {
+                                        mint: post.mint,
+                                        amount: postAmount - preAmount,
+                                        sessionId
+                                    });
+                                    await updateSessionAsFlash(sessionId, signature);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             for (const ix of allInstructions) {
                 if ('parsed' in ix && ix.parsed) {
