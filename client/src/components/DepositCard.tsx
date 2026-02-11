@@ -76,8 +76,10 @@ export default function DepositCard({
     }, [session.sessionId, onVerified, onExpired]);
 
     useEffect(() => {
-        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-        const wsUrl = `${protocol}//${window.location.host}/ws?session_id=${session.sessionId}`;
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || "";
+        const wsProtocol = backendUrl.startsWith("https") ? "wss:" : "ws:";
+        const wsHost = backendUrl.replace(/^https?:\/\//, "") || window.location.host;
+        const wsUrl = `${wsProtocol}//${wsHost}/ws?session_id=${session.sessionId}`;
 
         try {
             const ws = new WebSocket(wsUrl);
