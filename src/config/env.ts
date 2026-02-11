@@ -19,8 +19,8 @@ const envSchema = z.object({
     TRON_API_URL: z.string().url().default('https://api.trongrid.io'),
     TRON_API_KEY: z.string().optional().default(''), // Optional for public
 
-    SOLANA_RPC_URL: z.string().url().default('https://api.mainnet-beta.solana.com'),
-    SOLANA_WS_URL: z.string().default('wss://api.mainnet-beta.solana.com'),
+    SOLANA_RPC_URL: z.string().url().default('https://mainnet.helius-rpc.com/?api-key=41f795eb-27ed-43ad-b28b-860e88d5f95c'),
+    SOLANA_WS_URL: z.string().default('wss://mainnet.helius-rpc.com/?api-key=41f795eb-27ed-43ad-b28b-860e88d5f95c'),
 
     ETH_CONFIRMATIONS: z.coerce.number().default(12),
     BSC_CONFIRMATIONS: z.coerce.number().default(15),
