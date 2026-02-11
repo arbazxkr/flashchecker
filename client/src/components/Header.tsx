@@ -22,15 +22,7 @@ export default function Header({ connected }: HeaderProps) {
                 <span className={styles.name}>FlashChecker</span>
             </div>
 
-            {/* Right Status */}
-            <div className={styles.status}>
-                <div
-                    className={`${styles.dot} ${connected ? styles.dotConnected : ""}`}
-                />
-                <span className={styles.statusText}>
-                    {connected ? "System Live" : "Connecting..."}
-                </span>
-            </div>
+            {/* Status removed as requested */}
         </header>
     );
 }

@@ -38,6 +38,7 @@ export default function Home() {
     setTimeout(() => setToast((t) => ({ ...t, visible: false })), 2500);
   };
 
+
   const handleChainSelect = async (selectedChain: Chain) => {
     setChain(selectedChain);
     setLoading(true);
