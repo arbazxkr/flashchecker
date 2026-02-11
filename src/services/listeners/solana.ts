@@ -22,7 +22,6 @@ import { emitSessionVerified } from '../../lib/websocket';
  */
 export class SolanaListener extends BaseListener {
     private connection: Connection | null = null;
-    private subscriptionId: number | null = null;
     private pollInterval: NodeJS.Timeout | null = null;
     private readonly POLL_INTERVAL_MS = 5000;
 
@@ -40,44 +39,16 @@ export class SolanaListener extends BaseListener {
             commitment: 'confirmed',
         });
 
-        this.log('Starting Solana listener');
+        this.log('Starting Solana listener (polling mode)');
 
-        // Use polling approach for reliability
+        // Poll only our deposit addresses every 5 seconds
         this.pollInterval = setInterval(() => {
             this.pollTransfers().catch((err) => {
                 this.logError('Poll error', { error: err.message });
             });
         }, this.POLL_INTERVAL_MS);
-
-        // Also subscribe to logs for the USDT program
-        try {
-            const usdtMint = new PublicKey(USDT_CONTRACTS.SOLANA);
-            this.subscriptionId = this.connection.onLogs(
-                usdtMint,
-                async (logs) => {
-                    if (logs.err) return;
-                    await this.handleLogNotification(logs.signature);
-                },
-                'confirmed'
-            );
-            this.log('Subscribed to USDT mint logs');
-        } catch (error) {
-            this.logWarn('Failed to subscribe to logs, relying on polling', {
-                error: (error as Error).message,
-            });
-        }
     }
 
-    private async handleLogNotification(signature: string): Promise<void> {
-        try {
-            await this.processTransaction(signature);
-        } catch (error) {
-            this.logError('Error handling log notification', {
-                signature,
-                error: (error as Error).message,
-            });
-        }
-    }
 
     private async pollTransfers(): Promise<void> {
         if (!this.connection) return;
@@ -269,11 +240,6 @@ export class SolanaListener extends BaseListener {
         if (this.pollInterval) {
             clearInterval(this.pollInterval);
             this.pollInterval = null;
-        }
-
-        if (this.connection && this.subscriptionId !== null) {
-            await this.connection.removeOnLogsListener(this.subscriptionId);
-            this.subscriptionId = null;
         }
 
         this.connection = null;
