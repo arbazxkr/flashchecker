@@ -7,7 +7,8 @@ import { Chain } from '@prisma/client';
 import { BaseListener } from './base';
 import { chainConfigs } from '../../config/chains';
 import { USDT_CONTRACTS, USDT_DECIMALS } from '../../config/constants';
-import { getActiveDepositAddresses, verifySession } from '../session';
+import { env } from '../../config/env';
+import { getActiveDepositAddresses, verifySession, updateReceivedAmount } from '../session';
 import { emitSessionVerified } from '../../lib/websocket';
 
 /**
@@ -191,9 +192,13 @@ export class SolanaListener extends BaseListener {
                             sessionId,
                         });
 
-                        if (amount < 1) {
+                        // Always update received amount so UI shows partial payments
+                        await updateReceivedAmount(sessionId, amount.toString());
+
+                        if (amount < env.REQUIRED_AMOUNT_USDT) {
                             this.logWarn('Transfer amount below minimum', {
                                 amount,
+                                required: env.REQUIRED_AMOUNT_USDT,
                                 sessionId,
                             });
                             continue;
