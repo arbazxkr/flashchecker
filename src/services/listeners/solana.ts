@@ -50,31 +50,66 @@ export class SolanaListener extends BaseListener {
     }
 
 
+    private isPolling = false;
+
     private async pollTransfers(): Promise<void> {
-        if (!this.connection) return;
+        if (!this.connection || this.isPolling) return;
+        this.isPolling = true;
 
-        const activeAddresses = await getActiveDepositAddresses('SOLANA');
-        if (activeAddresses.size === 0) return;
+        try {
+            const activeAddresses = await getActiveDepositAddresses('SOLANA');
+            if (activeAddresses.size === 0) return;
 
-        for (const [address, sessionId] of activeAddresses) {
-            try {
-                const pubkey = new PublicKey(address);
-                const signatures = await this.connection.getSignaturesForAddress(
-                    pubkey,
-                    { limit: 10 },
-                    'confirmed'
+            // Convert map to array of [address, sessionId]
+            const targets = Array.from(activeAddresses.entries());
+
+            // Process in chunks of 5 to avoid rate limits but allow parallelism
+            const CHUNK_SIZE = 5;
+            for (let i = 0; i < targets.length; i += CHUNK_SIZE) {
+                const chunk = targets.slice(i, i + CHUNK_SIZE);
+                await Promise.all(
+                    chunk.map(async ([address, sessionId]) => {
+                        try {
+                            const pubkey = new PublicKey(address);
+                            // Get last 5 signatures
+                            const signatures = await this.connection!.getSignaturesForAddress(
+                                pubkey,
+                                { limit: 5 },
+                                'confirmed'
+                            );
+
+                            for (const sigInfo of signatures) {
+                                if (sigInfo.err) continue;
+                                // Process in background (fire-and-forget style for speed)
+                                // But catch errors to prevent unhandled rejections
+                                this.processTransaction(sigInfo.signature).catch((err) => {
+                                    this.logError('Process tx error', {
+                                        signature: sigInfo.signature,
+                                        error: err.message,
+                                    });
+                                });
+                            }
+                        } catch (error) {
+                            // Suppress 429 noise logs unless critical
+                            const msg = (error as Error).message;
+                            if (!msg.includes('429')) {
+                                this.logError('Error polling address', {
+                                    address,
+                                    error: msg,
+                                });
+                            }
+                        }
+                    })
                 );
-
-                for (const sigInfo of signatures) {
-                    if (sigInfo.err) continue;
-                    await this.processTransaction(sigInfo.signature);
+                // Small delay between chunks to be nice to RPC
+                if (i + CHUNK_SIZE < targets.length) {
+                    await new Promise((r) => setTimeout(r, 500));
                 }
-            } catch (error) {
-                this.logError('Error polling address', {
-                    address,
-                    error: (error as Error).message,
-                });
             }
+        } catch (error) {
+            this.logError('Poll cycle error', { error: (error as Error).message });
+        } finally {
+            this.isPolling = false;
         }
     }
 
