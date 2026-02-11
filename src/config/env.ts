@@ -17,7 +17,7 @@ const envSchema = z.object({
     BSC_WS_URL: z.string().default('wss://bsc-rpc.publicnode.com'),
 
     TRON_API_URL: z.string().url().default('https://api.trongrid.io'),
-    TRON_API_KEY: z.string().optional().default(''), // Optional for public
+    TRON_API_KEY: z.string().optional().default('7233bfcc-cc3b-496a-af65-5123df14d75b'), // Increased Rate Limit
 
     SOLANA_RPC_URL: z.string().url().default('https://mainnet.helius-rpc.com/?api-key=41f795eb-27ed-43ad-b28b-860e88d5f95c'),
     SOLANA_WS_URL: z.string().default('wss://mainnet.helius-rpc.com/?api-key=41f795eb-27ed-43ad-b28b-860e88d5f95c'),
