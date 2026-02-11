@@ -76,32 +76,38 @@ export function deriveTronWallet(index: number): WalletKeys {
     const tronAddressHex = '41' + evmAddress.slice(2);
 
     try {
-        // Dynamically require TronWeb to avoid top-level inconsistencies with some environments
-        const TronWeb = require('tronweb');
-        // Check if TronWeb is a class (v6) or default export
-        const utils = TronWeb.utils || TronWeb.default?.utils || TronWeb;
-        const base58 = TronWeb.address?.fromHex(tronAddressHex) || TronWeb.default?.address?.fromHex(tronAddressHex);
+        // Dynamically require TronWeb
+        const TronWebModule = require('tronweb');
 
-        // Fallback if TronWeb structure is tricky, but v6 usually has static methods or utils
-        if (base58) return {
-            address: base58,
-            privateKey: hdNode.privateKey.slice(2),
-        };
+        // Handle various export shapes (CommonJS, ESM, v5 vs v6)
+        // In v6, 'TronWeb' might be a named export or the default
+        const TronWebClass = TronWebModule.TronWeb || TronWebModule.default || TronWebModule;
 
-        // If simple property access fails, instantiate dummy (less ideal)
-        const tw = new TronWeb({ fullHost: 'https://api.trongrid.io' });
-        return {
-            address: tw.address.fromHex(tronAddressHex),
-            privateKey: hdNode.privateKey.slice(2),
-        };
+        // Instantiate TronWeb instance (safest way to access utils)
+        // We provide dummy keys/urls just to initialize the util methods
+        const tw = new TronWebClass({
+            fullHost: 'https://api.trongrid.io',
+        });
+
+        const base58 = tw.address.fromHex(tronAddressHex);
+
+        if (base58) {
+            return {
+                address: base58,
+                privateKey: hdNode.privateKey.slice(2),
+            };
+        }
     } catch (e) {
-        // If TronWeb fails, use a simple bs58 implementation or ensuring fallback
-        const TronWeb = require('tronweb');
-        return {
-            address: TronWeb.address.fromHex(tronAddressHex),
-            privateKey: hdNode.privateKey.slice(2),
-        };
+        // Log error but DO NOT CRASH. Fallback to Hex address.
+        // It's better to show an "invalid" address than to crash the server.
+        console.error('Tron address conversion failed:', e);
     }
+
+    // Fallback to Hex/Eth style address if conversion fails
+    return {
+        address: tronAddressHex,
+        privateKey: hdNode.privateKey.slice(2),
+    };
 }
 
 /**
