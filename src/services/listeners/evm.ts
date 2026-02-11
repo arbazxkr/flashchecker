@@ -99,18 +99,23 @@ export class EVMListener extends BaseListener {
         }
     }
 
-    private async poll(): Promise<void> {
-        // First check if there are active sessions for this chain
-        const activeAddresses = await getActiveDepositAddresses(this.chain);
-        if (activeAddresses.size === 0) {
-            return; // No active sessions — don't even connect to RPC
-        }
+    private isPolling = false;
 
-        // Lazy-connect to provider
-        if (!await this.ensureProvider()) return;
-        if (!this.provider) return;
+    private async poll(): Promise<void> {
+        if (this.isPolling) return;
+        this.isPolling = true;
 
         try {
+            // First check if there are active sessions for this chain
+            const activeAddresses = await getActiveDepositAddresses(this.chain);
+            if (activeAddresses.size === 0) {
+                return; // No active sessions — don't even connect to RPC
+            }
+
+            // Lazy-connect to provider
+            if (!(await this.ensureProvider())) return;
+            if (!this.provider) return;
+
             const currentBlock = await this.provider.getBlockNumber();
             if (currentBlock <= this.lastBlock) return;
 
@@ -132,8 +137,14 @@ export class EVMListener extends BaseListener {
                 ],
             });
 
+            // Process logs in parallel (Fire-and-Forget) without blocking the next poll
             for (const log of logs) {
-                await this.handleLog(log, activeAddresses);
+                this.handleLog(log, activeAddresses).catch((err) => {
+                    this.logError('Error handling log', {
+                        txHash: log.transactionHash,
+                        error: err.message,
+                    });
+                });
             }
 
             this.lastBlock = currentBlock;
@@ -144,6 +155,8 @@ export class EVMListener extends BaseListener {
             if (this.consecutiveErrors <= 3) {
                 this.logError('Error polling', { error: (error as Error).message });
             }
+        } finally {
+            this.isPolling = false;
         }
     }
 

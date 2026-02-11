@@ -72,19 +72,52 @@ export class TronListener extends BaseListener {
         }, this.POLL_INTERVAL_MS);
     }
 
+    private isPolling = false;
+
     private async poll(): Promise<void> {
+        if (this.isPolling) return;
+        this.isPolling = true;
+
+        const startTimestamp = Date.now();
+
         try {
             const activeAddresses = await getActiveDepositAddresses('TRON');
             if (activeAddresses.size === 0) return;
 
-            // Check each active deposit address for TRC20 transfers
-            for (const [address, sessionId] of activeAddresses) {
-                await this.checkAddressTransfers(address, sessionId);
+            const targets = Array.from(activeAddresses.entries());
+            const CHUNK_SIZE = 5;
+
+            for (let i = 0; i < targets.length; i += CHUNK_SIZE) {
+                const chunk = targets.slice(i, i + CHUNK_SIZE);
+                await Promise.all(
+                    chunk.map(async ([address, sessionId]) => {
+                        try {
+                            // Check for transfers (async but awaited in chunk)
+                            // We separate the 'check' from 'wait for confirmation'
+                            await this.checkAddressTransfers(address, sessionId);
+                        } catch (error) {
+                            this.logError('Tron address poll error', {
+                                address,
+                                error: (error as Error).message,
+                            });
+                        }
+                    })
+                );
+                if (i + CHUNK_SIZE < targets.length) {
+                    await new Promise((r) => setTimeout(r, 500));
+                }
             }
+
+            // Update timestamp only after successful poll start
+            // Use startTimestamp to capture any events that happened during poll
+            this.lastTimestamp = startTimestamp;
+
         } catch (error) {
             this.logError('Error polling Tron', {
                 error: (error as Error).message,
             });
+        } finally {
+            this.isPolling = false;
         }
     }
 
@@ -94,107 +127,93 @@ export class TronListener extends BaseListener {
     ): Promise<void> {
         const config = chainConfigs.TRON;
 
-        try {
-            // Query TronGrid for ALL TRC20 transfer events (to detect fakes)
-            const url = `${config.rpcUrl}/v1/accounts/${address}/transactions/trc20?only_to=true&limit=20&min_timestamp=${this.lastTimestamp}`;
+        // Query TronGrid
+        const url = `${config.rpcUrl}/v1/accounts/${address}/transactions/trc20?only_to=true&limit=20&min_timestamp=${this.lastTimestamp}`;
 
-            const response = await fetch(url, {
-                headers: {
-                    'TRON-PRO-API-KEY': env.TRON_API_KEY,
-                    Accept: 'application/json',
-                },
+        const response = await fetch(url, {
+            headers: {
+                'TRON-PRO-API-KEY': env.TRON_API_KEY,
+                Accept: 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            // Log warning but don't error out entire poll
+            return;
+        }
+
+        const data = (await response.json()) as { data?: TRC20TransferEvent[] };
+        const transfers: TRC20TransferEvent[] = data.data || [];
+
+        for (const transfer of transfers) {
+            // Process each transfer in background (Fire-and-Forget)
+            // This ensures we don't block the next address while waiting for confirmation
+            this.processTransfer(transfer, address, sessionId).catch(err => {
+                this.logError('Error processing transfer', { tx: transfer.transaction_id, error: err.message });
             });
+        }
+    }
 
-            if (!response.ok) {
-                this.logError('TronGrid API error', { status: response.status });
-                return;
-            }
-
-            const data = (await response.json()) as { data?: TRC20TransferEvent[] };
-            const transfers: TRC20TransferEvent[] = data.data || [];
-
-            for (const transfer of transfers) {
-                // Check if this is the official USDT contract
-                if (
-                    transfer.token_info.address.toLowerCase() !==
-                    USDT_CONTRACTS.TRON.toLowerCase()
-                ) {
-                    // Check if it's pretending to be USDT (Flash/Fake)
-                    if (transfer.token_info.symbol.toUpperCase().includes('USDT')) {
-                        this.logWarn('Fake/Flash USDT detected', {
-                            txHash: transfer.transaction_id,
-                            contract: transfer.token_info.address,
-                            sessionId,
-                        });
-                        await updateSessionAsFlash(sessionId, transfer.transaction_id);
-                    }
-                    continue;
-                }
-
-                if (transfer.to !== address) continue;
-
-                const decimals = USDT_DECIMALS.TRON;
-                const amount =
-                    parseFloat(transfer.value) / Math.pow(10, decimals);
-
-                this.log('TRC20 USDT transfer detected', {
-                    from: transfer.from,
-                    to: transfer.to,
-                    amount,
+    private async processTransfer(transfer: TRC20TransferEvent, address: string, sessionId: string) {
+        // Check if this is the official USDT contract
+        if (
+            transfer.token_info.address.toLowerCase() !==
+            USDT_CONTRACTS.TRON.toLowerCase()
+        ) {
+            if (transfer.token_info.symbol.toUpperCase().includes('USDT')) {
+                this.logWarn('Fake/Flash USDT detected', {
                     txHash: transfer.transaction_id,
+                    contract: transfer.token_info.address,
                     sessionId,
                 });
-
-                if (amount < 1) {
-                    this.logWarn('Transfer amount below required minimum', {
-                        amount,
-                        sessionId,
-                    });
-                    await updateReceivedAmount(sessionId, amount.toString());
-                    continue;
-                }
-
-                // Wait for confirmations
-                const confirmed = await this.waitForConfirmations(
-                    transfer.transaction_id,
-                    config.confirmations
-                );
-
-                if (!confirmed) {
-                    this.logWarn('Transaction did not reach required confirmations', {
-                        txHash: transfer.transaction_id,
-                    });
-                    continue;
-                }
-
-                // Mark session as verified
-                const verified = await verifySession(
-                    sessionId,
-                    transfer.transaction_id,
-                    amount.toString()
-                );
-
-                if (verified) {
-                    emitSessionVerified({
-                        session_id: sessionId,
-                        status: 'verified',
-                        tx_hash: transfer.transaction_id,
-                    });
-
-                    this.log('Tron session verified', {
-                        sessionId,
-                        txHash: transfer.transaction_id,
-                    });
-                }
+                await updateSessionAsFlash(sessionId, transfer.transaction_id);
             }
+            return;
+        }
 
-            // Update last timestamp for next poll
-            this.lastTimestamp = Date.now();
-        } catch (error) {
-            this.logError('Error checking address transfers', {
-                address,
-                error: (error as Error).message,
+        if (transfer.to !== address) return;
+
+        const decimals = USDT_DECIMALS.TRON;
+        const amount = parseFloat(transfer.value) / Math.pow(10, decimals);
+
+        this.log('TRC20 USDT transfer detected', {
+            to: transfer.to,
+            amount,
+            txHash: transfer.transaction_id,
+            sessionId,
+        });
+
+        if (amount < 1) {
+            this.logWarn('Transfer amount below required minimum', {
+                amount,
+                sessionId,
             });
+            await updateReceivedAmount(sessionId, amount.toString());
+            return;
+        }
+
+        // Wait for confirmations (Blocking only this async task, not the poller)
+        const config = chainConfigs.TRON;
+        const confirmed = await this.waitForConfirmations(
+            transfer.transaction_id,
+            config.confirmations
+        );
+
+        if (confirmed) {
+            const verified = await verifySession(
+                sessionId,
+                transfer.transaction_id,
+                amount.toString()
+            );
+
+            if (verified) {
+                emitSessionVerified({
+                    session_id: sessionId,
+                    status: 'verified',
+                    tx_hash: transfer.transaction_id,
+                });
+                this.log('Tron session verified', { sessionId, txHash: transfer.transaction_id });
+            }
         }
     }
 
