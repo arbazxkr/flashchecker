@@ -16,6 +16,7 @@ import { startSweeper, stopSweeper } from './services/sweeper';
 
 // ─── Express App ─────────────────────────────────────────────
 const app = express();
+app.set('trust proxy', 1); // Render uses a reverse proxy
 
 // Security middleware
 app.use(
