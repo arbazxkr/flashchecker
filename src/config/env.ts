@@ -10,10 +10,10 @@ const envSchema = z.object({
     MASTER_MNEMONIC: z.string().min(10),
 
     // Reliable Public RPCs (LlamaNodes, Ankr, etc.)
-    ETH_RPC_URL: z.string().url().default('https://eth.w3node.com/46391c898a8ee3537342de141aa6543ba06d1386771b05b5601f1a0609503032'),
+    ETH_RPC_URL: z.string().url().default('https://eth.w3node.com/46391c898a8ee3537342de141aa6543ba06d1386771b05b5601f1a0609503032/api'),
     ETH_WS_URL: z.string().default('wss://ethereum-rpc.publicnode.com'),
 
-    BSC_RPC_URL: z.string().url().default('https://bsc.w3node.com/00dbab3d08fef43682e0ff8e14e124bffb4c07e22591ad2c936898074506fbd3'),
+    BSC_RPC_URL: z.string().url().default('https://bsc.w3node.com/00dbab3d08fef43682e0ff8e14e124bffb4c07e22591ad2c936898074506fbd3/api'),
     BSC_WS_URL: z.string().default('wss://bsc-rpc.publicnode.com'),
 
     TRON_API_URL: z.string().url().default('https://api.trongrid.io'),
