@@ -1,0 +1,94 @@
+.header {
+    width: 100%;
+    max-width: 1280px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    margin: 0 auto;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: glowPulse 4s ease-in-out infinite;
+}
+
+.name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--brand);
+    letter-spacing: -0.02em;
+}
+
+/* New Nav Links */
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+.navLink {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-low);
+    text-decoration: none;
+    transition: color var(--dur-fast);
+    cursor: pointer;
+}
+
+.navLinkActive {
+    color: var(--text-high);
+}
+
+.navLink:hover {
+    color: var(--brand);
+}
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-mid);
+    border: 1px solid var(--border-low);
+    border-radius: var(--r-full);
+    font-size: 0.75rem;
+    color: var(--text-lowest);
+    transition: all var(--dur-normal) var(--ease-in-out);
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--grey-600);
+    transition: all var(--dur-normal) var(--ease-in-out);
+}
+
+.dotConnected {
+    background: var(--success);
+    box-shadow: 0 0 8px rgba(0, 214, 146, 0.4);
+    animation: dotPulse 2s ease-in-out infinite;
+}
+
+.statusText {
+    font-weight: 500;
+}
+
+@media (max-width: 640px) {
+    .header {
+        padding: 1rem;
+    }
+
+    .nav {
+        display: none;
+    }
+}

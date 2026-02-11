@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="FlashChecker — Instant multi-chain USDT deposit verification. Pay with Ethereum, BSC, Tron, or Solana.">
+    <title>FlashChecker — Instant USDT Verification</title>
+
+    <!-- Geist fonts — same as Titan Exchange -->
+    <style>
+        @font-face {
+            font-family: 'Geist';
+            font-style: normal;
+            font-weight: 100 900;
+            font-display: swap;
+            src: url('/fonts/4cf2300e9c8272f7-s.p.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Geist Mono';
+            font-style: normal;
+            font-weight: 100 900;
+            font-display: swap;
+            src: url('/fonts/93f479601ee12b01-s.p.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'recklessNeue';
+            font-style: normal;
+            font-display: swap;
+            src: url('/fonts/6a3a6b9b6ed5d1fb-s.p.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'recklessNeue';
+            font-style: italic;
+            font-display: swap;
+            src: url('/fonts/8a392b5c02e3bc8c-s.p.woff2') format('woff2');
+        }
+    </style>
+
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+
+<body>
+    <!-- Ambient Background Glows -->
+    <div class="ambient-glow ambient-glow--1"></div>
+    <div class="ambient-glow ambient-glow--2"></div>
+    <div class="ambient-glow ambient-glow--3"></div>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header__brand">
+            <div class="header__logo">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <path d="M14 2L26 8V20L14 26L2 20V8L14 2Z" stroke="url(#logo-grad)" stroke-width="2" fill="none" />
+                    <path d="M14 6L22 10V18L14 22L6 18V10L14 6Z" fill="url(#logo-grad)" opacity="0.3" />
+                    <path d="M10 14L13 17L19 11" stroke="url(#logo-grad)" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <defs>
+                        <linearGradient id="logo-grad" x1="2" y1="2" x2="26" y2="26">
+                            <stop stop-color="#f2d363" />
+                            <stop offset="1" stop-color="#d4a831" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <span class="header__name">FlashChecker</span>
+        </div>
+        <div class="header__status">
+            <div class="header__dot" id="statusDot"></div>
+            <span class="header__status-text" id="statusText">Connecting...</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main" id="main">
+
+        <!-- ═══ Step 1: Chain Selection ═══ -->
+        <section class="card card--active" id="stepSelect">
+            <div class="card__header">
+                <span class="card__step">Step 1</span>
+                <h1 class="card__title">Select Network</h1>
+            </div>
+            <p class="card__subtitle">Choose the blockchain to send 1 USDT</p>
+
+            <div class="chain-grid" id="chainGrid">
+                <button class="chain-btn" data-chain="ETHEREUM" id="btn-ethereum">
+                    <div class="chain-btn__icon">
+                        <svg viewBox="0 0 32 32" width="32" height="32">
+                            <circle cx="16" cy="16" r="16" fill="#627EEA" />
+                            <path d="M16.498 4v8.87l7.497 3.35L16.498 4z" fill="#fff" opacity="0.6" />
+                            <path d="M16.498 4L9 16.22l7.498-3.35V4z" fill="#fff" />
+                            <path d="M16.498 21.968v6.027L24 17.616l-7.502 4.352z" fill="#fff" opacity="0.6" />
+                            <path d="M16.498 27.995v-6.028L9 17.616l7.498 10.379z" fill="#fff" />
+                            <path d="M16.498 20.573l7.497-4.353-7.497-3.348v7.701z" fill="#fff" opacity="0.2" />
+                            <path d="M9 16.22l7.498 4.353v-7.701L9 16.22z" fill="#fff" opacity="0.6" />
+                        </svg>
+                    </div>
+                    <div class="chain-btn__info">
+                        <span class="chain-btn__name">Ethereum</span>
+                        <span class="chain-btn__tag">ERC-20 · USDT</span>
+                    </div>
+                    <div class="chain-btn__arrow">→</div>
+                </button>
+
+                <button class="chain-btn" data-chain="BSC" id="btn-bsc">
+                    <div class="chain-btn__icon">
+                        <svg viewBox="0 0 32 32" width="32" height="32">
+                            <circle cx="16" cy="16" r="16" fill="#F3BA2F" />
+                            <path
+                                d="M16 6l3.09 3.09L12.91 15.27 16 18.36l6.18-6.18L16 6zm-6.18 6.18L6.73 15.27l3.09 3.09 3.09-3.09-3.09-3.09zm12.36 0l-3.09 3.09 3.09 3.09 3.09-3.09-3.09-3.09zM16 18.36l-3.09 3.09L16 24.54l3.09-3.09L16 18.36z"
+                                fill="#fff" />
+                        </svg>
+                    </div>
+                    <div class="chain-btn__info">
+                        <span class="chain-btn__name">BNB Chain</span>
+                        <span class="chain-btn__tag">BEP-20 · USDT</span>
+                    </div>
+                    <div class="chain-btn__arrow">→</div>
+                </button>
+
+                <button class="chain-btn" data-chain="TRON" id="btn-tron">
+                    <div class="chain-btn__icon">
+                        <svg viewBox="0 0 32 32" width="32" height="32">
+                            <circle cx="16" cy="16" r="16" fill="#EF0027" />
+                            <path d="M8 8l16 2-10 14L8 8z" fill="#fff" />
+                            <path d="M8 8l7.5 5.5L24 10 8 8z" fill="#fff" opacity="0.7" />
+                        </svg>
+                    </div>
+                    <div class="chain-btn__info">
+                        <span class="chain-btn__name">Tron</span>
+                        <span class="chain-btn__tag">TRC-20 · USDT</span>
+                    </div>
+                    <div class="chain-btn__arrow">→</div>
+                </button>
+
+                <button class="chain-btn" data-chain="SOLANA" id="btn-solana">
+                    <div class="chain-btn__icon">
+                        <svg viewBox="0 0 32 32" width="32" height="32">
+                            <circle cx="16" cy="16" r="16" fill="#000" />
+                            <linearGradient id="sol-grad" x1="8" y1="24" x2="24" y2="8">
+                                <stop stop-color="#9945FF" />
+                                <stop offset="0.5" stop-color="#14F195" />
+                                <stop offset="1" stop-color="#00D1FF" />
+                            </linearGradient>
+                            <path
+                                d="M9 20.5h11.5l2.5-2.5H11.5L9 20.5zM9 14h11.5l2.5-2.5H11.5L9 14zM23 17H11.5L9 14.5h11.5L23 17z"
+                                fill="url(#sol-grad)" />
+                        </svg>
+                    </div>
+                    <div class="chain-btn__info">
+                        <span class="chain-btn__name">Solana</span>
+                        <span class="chain-btn__tag">SPL · USDT</span>
+                    </div>
+                    <div class="chain-btn__arrow">→</div>
+                </button>
+            </div>
+        </section>
+
+        <!-- ═══ Step 2: Deposit ═══ -->
+        <section class="card card--hidden" id="stepDeposit">
+            <div class="card__header">
+                <button class="card__back" id="backBtn" aria-label="Go back">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M12 4L6 10L12 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <div>
+                    <span class="card__step">Step 2</span>
+                    <h1 class="card__title">Send USDT</h1>
+                </div>
+            </div>
+
+            <div class="deposit-info">
+                <div class="deposit-chain" id="depositChainBadge">
+                    <span class="deposit-chain__dot"></span>
+                    <span id="depositChainName">Ethereum</span>
+                </div>
+
+                <div class="deposit-amount">
+                    <span class="deposit-amount__value">1.00</span>
+                    <span class="deposit-amount__currency">USDT</span>
+                </div>
+
+                <div class="deposit-address-box" id="addressBox">
+                    <label class="deposit-address-box__label">Deposit Address</label>
+                    <div class="deposit-address-box__row">
+                        <code class="deposit-address-box__addr" id="depositAddress">Loading...</code>
+                        <button class="deposit-address-box__copy" id="copyBtn" aria-label="Copy address">
+                            <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
+                                <rect x="6" y="6" width="10" height="10" rx="2" stroke="currentColor"
+                                    stroke-width="1.5" />
+                                <path d="M12 6V4a2 2 0 00-2-2H4a2 2 0 00-2 2v6a2 2 0 002 2h2" stroke="currentColor"
+                                    stroke-width="1.5" />
+                            </svg>
+                            <span id="copyText">Copy</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- QR Code -->
+                <div class="qr-container" id="qrContainer">
+                    <canvas id="qrCanvas" width="180" height="180"></canvas>
+                </div>
+
+                <div class="deposit-timer" id="timerSection">
+                    <div class="deposit-timer__bar">
+                        <div class="deposit-timer__fill" id="timerFill"></div>
+                    </div>
+                    <div class="deposit-timer__text">
+                        <span>Expires in</span>
+                        <span class="deposit-timer__countdown" id="timerCountdown">5:00</span>
+                    </div>
+                </div>
+
+                <div class="deposit-status" id="depositStatus">
+                    <div class="deposit-status__spinner"></div>
+                    <span>Waiting for payment...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ Step 3: Verified ═══ -->
+        <section class="card card--hidden" id="stepVerified">
+            <div class="verified-container">
+                <div class="verified-icon" id="verifiedIcon">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                        <circle cx="32" cy="32" r="30" stroke="#00d692" stroke-width="3" fill="none" opacity="0.3" />
+                        <circle cx="32" cy="32" r="30" stroke="#00d692" stroke-width="3" fill="none" />
+                        <path d="M20 32L28 40L44 24" stroke="#00d692" stroke-width="3.5" stroke-linecap="round"
+                            stroke-linejoin="round" class="check-path" />
+                    </svg>
+                </div>
+                <h2 class="verified-title">Payment Verified</h2>
+                <p class="verified-subtitle">Your USDT deposit has been confirmed on-chain</p>
+
+                <div class="verified-details">
+                    <div class="verified-row">
+                        <span class="verified-row__label">Transaction</span>
+                        <a class="verified-row__value verified-row__value--link" id="verifiedTxHash" href="#"
+                            target="_blank" rel="noopener">
+                            Loading...
+                        </a>
+                    </div>
+                    <div class="verified-row">
+                        <span class="verified-row__label">Network</span>
+                        <span class="verified-row__value" id="verifiedChain">-</span>
+                    </div>
+                    <div class="verified-row">
+                        <span class="verified-row__label">Amount</span>
+                        <span class="verified-row__value">1.00 USDT</span>
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="newSessionBtn">
+                    New Payment
+                </button>
+            </div>
+        </section>
+
+        <!-- ═══ Expired ═══ -->
+        <section class="card card--hidden" id="stepExpired">
+            <div class="expired-container">
+                <div class="expired-icon">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                        <circle cx="32" cy="32" r="30" stroke="#f34f6a" stroke-width="3" fill="none" opacity="0.3" />
+                        <path d="M32 18V34" stroke="#f34f6a" stroke-width="3" stroke-linecap="round" />
+                        <circle cx="32" cy="42" r="2" fill="#f34f6a" />
+                    </svg>
+                </div>
+                <h2 class="expired-title">Session Expired</h2>
+                <p class="expired-subtitle">The payment window has closed</p>
+                <button class="btn-primary" id="retryBtn">
+                    Try Again
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <span class="footer__text">Secured by blockchain verification</span>
+        <div class="footer__chains">
+            <span class="footer__chain-dot footer__chain-dot--eth"></span>
+            <span class="footer__chain-dot footer__chain-dot--bsc"></span>
+            <span class="footer__chain-dot footer__chain-dot--trx"></span>
+            <span class="footer__chain-dot footer__chain-dot--sol"></span>
+        </div>
+    </footer>
+
+    <!-- Toast container -->
+    <div class="toast" id="toast"></div>
+
+    <script src="/app.js"></script>
+</body>
+
+</html>

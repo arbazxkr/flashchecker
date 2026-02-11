@@ -1,0 +1,131 @@
+.card {
+    width: 100%;
+    background: var(--bg-low);
+    border: 1px solid var(--border-low);
+    border-radius: var(--r-xl);
+    padding: 1.5rem;
+    animation: slideUp 0.4s var(--ease-out) both;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.step {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--brand);
+    background: var(--brand-soft);
+    padding: 2px 8px;
+    border-radius: var(--r-sm);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-high);
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    font-size: 0.875rem;
+    color: var(--text-low);
+    margin-bottom: 1.25rem;
+    padding-left: 2px;
+}
+
+/* ─── Chain Grid ──────────────────────────────────────────── */
+.grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chainBtn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--bg-mid);
+    border: 1px solid var(--border-low);
+    border-radius: var(--r-lg);
+    cursor: pointer;
+    transition: all var(--dur-normal) var(--ease-in-out);
+    animation: slideUp 0.35s var(--ease-out) both;
+}
+
+.chainBtn:hover {
+    background: var(--bg-high);
+    border-color: var(--brand);
+}
+
+.chainBtn:active {
+    scale: 0.98;
+}
+
+.chainBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.icon svg,
+.logoImg {
+    object-fit: contain;
+}
+
+.info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+}
+
+.name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-high);
+}
+
+.tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-lowest);
+    letter-spacing: 0.02em;
+}
+
+.arrow {
+    font-size: 1rem;
+    color: var(--grey-600);
+    transition: all var(--dur-normal) var(--ease-in-out);
+}
+
+.chainBtn:hover .arrow {
+    color: var(--brand);
+    transform: translateX(2px);
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--brand-30);
+    border-top-color: var(--brand);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}

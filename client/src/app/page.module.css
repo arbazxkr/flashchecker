@@ -1,0 +1,102 @@
+.wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* Default align-items: stretch matches our need for full-width header/footer */
+}
+
+/* ─── Main Content (Vertically Centered) ───────────────────── */
+.main {
+  flex: 1;
+  /* Fills remaining vertical space */
+  width: 100%;
+  max-width: 26.25rem;
+  /* 420px Card Constraint */
+  margin: 0 auto;
+  /* Horizontally Centered */
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* Vertically Centered */
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Footer (Full Width) ─────────────────────────────────── */
+.footer {
+  width: 100%;
+  max-width: 1280px;
+  /* Match header constraint */
+  margin: 0 auto;
+  padding: 1.5rem 2rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footerText {
+  font-size: 0.875rem;
+  color: var(--text-low);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Add a subtle indicator or link style if needed */
+.footerText::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--success);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 214, 146, 0.4);
+}
+
+.footerDots {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  opacity: 0.4;
+  transition: opacity 0.3s;
+}
+
+.dot:hover {
+  opacity: 1;
+}
+
+.dotEth {
+  background: #627eea;
+  box-shadow: 0 0 8px rgba(98, 126, 234, 0.3);
+}
+
+.dotBsc {
+  background: #f3ba2f;
+  box-shadow: 0 0 8px rgba(243, 186, 47, 0.3);
+}
+
+.dotTrx {
+  background: #ef0027;
+  box-shadow: 0 0 8px rgba(239, 0, 39, 0.3);
+}
+
+.dotSol {
+  background: #9945ff;
+  box-shadow: 0 0 8px rgba(153, 69, 255, 0.3);
+}
+
+@media (max-width: 640px) {
+  .footer {
+    padding: 1.5rem 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}

@@ -1,0 +1,271 @@
+.card {
+    width: 100%;
+    background: var(--bg-low);
+    border: 1px solid var(--border-low);
+    border-radius: var(--r-xl);
+    padding: 1.5rem;
+    animation: slideUp 0.4s var(--ease-out) both;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.back {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-low);
+    border-radius: var(--r-md);
+    background: transparent;
+    color: var(--text-low);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-in-out);
+}
+
+.back:hover {
+    background: var(--bg-mid);
+    color: var(--text-high);
+    border-color: var(--brand);
+}
+
+.back:active {
+    scale: 0.95;
+}
+
+.step {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--brand);
+    background: var(--brand-soft);
+    padding: 2px 8px;
+    border-radius: var(--r-sm);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-high);
+    letter-spacing: -0.02em;
+}
+
+/* ─── Body ────────────────────────────────────────────────── */
+.body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.chainBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: var(--brand-soft);
+    border: 1px solid var(--brand-10);
+    border-radius: var(--r-full);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--brand);
+}
+
+.chainDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--brand);
+    animation: dotPulse 2s ease-in-out infinite;
+}
+
+/* Amount */
+.amount {
+    text-align: center;
+    padding: 4px 0;
+}
+
+.amountValue {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--text-high);
+}
+
+.amountCurrency {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-lowest);
+    margin-left: 8px;
+}
+
+/* Address box — Titan input style */
+.addressBox {
+    width: 100%;
+    background: var(--bg-mid);
+    border: 1px solid var(--border-low);
+    border-radius: var(--r-lg);
+    padding: 14px 16px;
+    transition: border-color var(--dur-normal) var(--ease-in-out);
+}
+
+.addressBox:hover {
+    border-color: var(--border);
+}
+
+.addressLabel {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-lowest);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.addressRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.address {
+    flex: 1;
+    font-family: 'Geist Mono', 'SF Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-mid);
+    word-break: break-all;
+    line-height: 1.5;
+    user-select: all;
+}
+
+.copyBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 14px;
+    background: var(--brand);
+    border: none;
+    border-radius: var(--r-full);
+    color: var(--grey-950);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-in-out);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.copyBtn:hover {
+    background: var(--brand-hover);
+}
+
+.copyBtn:active {
+    scale: 0.95;
+}
+
+/* QR */
+.qrContainer {
+    padding: 16px;
+    background: #ffffff;
+    border-radius: var(--r-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.qrCanvas {
+    display: block;
+    border-radius: 4px;
+}
+
+/* Timer */
+.timer {
+    width: 100%;
+}
+
+.timerBar {
+    width: 100%;
+    height: 3px;
+    background: var(--bg-high);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.timerFill {
+    height: 100%;
+    background: var(--brand);
+    border-radius: 3px;
+    transition: width 1s linear;
+}
+
+.timerFill.danger {
+    background: var(--alert);
+}
+
+.timerText {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--text-lowest);
+}
+
+.countdown {
+    font-weight: 700;
+    color: var(--brand);
+    font-variant-numeric: tabular-nums;
+}
+
+.countdown.danger {
+    color: var(--alert);
+}
+
+/* Status */
+.status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: var(--brand-soft);
+    border: 1px solid var(--brand-10);
+    border-radius: var(--r-lg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--brand);
+    width: 100%;
+    justify-content: center;
+}
+
+.statusSpinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--brand-30);
+    border-top-color: var(--brand);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* ─── Mobile ──────────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .card {
+        padding: 1.25rem 1rem;
+    }
+
+    .amountValue {
+        font-size: 2.5rem;
+    }
+
+    .address {
+        font-size: 0.6875rem;
+    }
+}
