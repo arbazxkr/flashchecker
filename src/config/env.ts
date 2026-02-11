@@ -9,14 +9,18 @@ const envSchema = z.object({
     DATABASE_URL: z.string().url(),
     MASTER_MNEMONIC: z.string().min(10),
 
-    ETH_RPC_URL: z.string().url(),
-    ETH_WS_URL: z.string(),
-    BSC_RPC_URL: z.string().url(),
-    BSC_WS_URL: z.string(),
-    TRON_API_URL: z.string().url(),
-    TRON_API_KEY: z.string().min(1),
-    SOLANA_RPC_URL: z.string().url(),
-    SOLANA_WS_URL: z.string(),
+    // Reliable Public RPCs (LlamaNodes, Ankr, etc.)
+    ETH_RPC_URL: z.string().url().default('https://eth.llamarpc.com'),
+    ETH_WS_URL: z.string().default('wss://ethereum-rpc.publicnode.com'),
+
+    BSC_RPC_URL: z.string().url().default('https://binance.llamarpc.com'),
+    BSC_WS_URL: z.string().default('wss://bsc-rpc.publicnode.com'),
+
+    TRON_API_URL: z.string().url().default('https://api.trongrid.io'),
+    TRON_API_KEY: z.string().optional().default(''), // Optional for public
+
+    SOLANA_RPC_URL: z.string().url().default('https://api.mainnet-beta.solana.com'),
+    SOLANA_WS_URL: z.string().default('wss://api.mainnet-beta.solana.com'),
 
     ETH_CONFIRMATIONS: z.coerce.number().default(12),
     BSC_CONFIRMATIONS: z.coerce.number().default(15),
