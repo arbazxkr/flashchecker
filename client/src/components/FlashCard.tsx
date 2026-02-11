@@ -60,6 +60,7 @@ export default function FlashCard({
                             strokeWidth="4"
                             strokeLinecap="round"
                             strokeLinejoin="round"
+                            className={styles.checkPath}
                         />
                     </svg>
                 </div>
