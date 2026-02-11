@@ -6,6 +6,10 @@ import { CreateSessionResponse } from '../types';
 import { logger } from '../utils/logger';
 import { emitSessionUpdated } from '../lib/websocket';
 
+// Cache for active deposit addresses to reduce DB load
+const activeAddressCache = new Map<Chain, { lastFetch: number; data: Map<string, string> }>();
+const CACHE_TTL_MS = 30000; // 30 seconds cache
+
 /**
  * Creates a new deposit session:
  * 1. Atomically allocates a new derivation index
@@ -41,6 +45,9 @@ export async function createSession(
         derivationIndex,
         expiresAt: expiresAt.toISOString(),
     });
+
+    // Invalidate cache for this chain so listener picks up new address immediately
+    activeAddressCache.delete(chain);
 
     return {
         sessionId: session.id,
@@ -80,6 +87,13 @@ export async function getActiveSessionsByChain(chain: Chain) {
 export async function getActiveDepositAddresses(
     chain: Chain
 ): Promise<Map<string, string>> {
+    const now = Date.now();
+    const cached = activeAddressCache.get(chain);
+
+    if (cached && now - cached.lastFetch < CACHE_TTL_MS) {
+        return cached.data;
+    }
+
     const sessions = await getActiveSessionsByChain(chain);
     const addressMap = new Map<string, string>();
 
@@ -92,6 +106,7 @@ export async function getActiveDepositAddresses(
         addressMap.set(normalizedAddr, session.id);
     }
 
+    activeAddressCache.set(chain, { lastFetch: now, data: addressMap });
     return addressMap;
 }
 
