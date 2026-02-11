@@ -72,16 +72,36 @@ export function deriveTronWallet(index: number): WalletKeys {
     );
 
     // Tron address: take raw public key, keccak256 hash, take last 20 bytes, add 0x41 prefix, base58check
-    // For simplicity, we store the hex address. TronWeb can convert it.
-    // The private key is identical since both use secp256k1.
     const evmAddress = hdNode.address;
-    // Convert EVM address to Tron address format (replace 0x with 41, then base58check)
     const tronAddressHex = '41' + evmAddress.slice(2);
 
-    return {
-        address: tronAddressHex, // Hex format — TronWeb will convert to Base58
-        privateKey: hdNode.privateKey.slice(2), // Remove 0x prefix for TronWeb
-    };
+    try {
+        // Dynamically require TronWeb to avoid top-level inconsistencies with some environments
+        const TronWeb = require('tronweb');
+        // Check if TronWeb is a class (v6) or default export
+        const utils = TronWeb.utils || TronWeb.default?.utils || TronWeb;
+        const base58 = TronWeb.address?.fromHex(tronAddressHex) || TronWeb.default?.address?.fromHex(tronAddressHex);
+
+        // Fallback if TronWeb structure is tricky, but v6 usually has static methods or utils
+        if (base58) return {
+            address: base58,
+            privateKey: hdNode.privateKey.slice(2),
+        };
+
+        // If simple property access fails, instantiate dummy (less ideal)
+        const tw = new TronWeb({ fullHost: 'https://api.trongrid.io' });
+        return {
+            address: tw.address.fromHex(tronAddressHex),
+            privateKey: hdNode.privateKey.slice(2),
+        };
+    } catch (e) {
+        // If TronWeb fails, use a simple bs58 implementation or ensuring fallback
+        const TronWeb = require('tronweb');
+        return {
+            address: TronWeb.address.fromHex(tronAddressHex),
+            privateKey: hdNode.privateKey.slice(2),
+        };
+    }
 }
 
 /**
