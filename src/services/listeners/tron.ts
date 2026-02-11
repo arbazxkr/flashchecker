@@ -52,7 +52,7 @@ interface TRC20TransferEvent {
 export class TronListener extends BaseListener {
     private pollInterval: NodeJS.Timeout | null = null;
     private lastTimestamp: number = Date.now();
-    private readonly POLL_INTERVAL_MS = 3000; // Poll every 3 seconds
+    private readonly POLL_INTERVAL_MS = 5000; // Poll every 5 seconds
 
     constructor() {
         super('TRON');

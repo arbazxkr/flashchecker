@@ -10,18 +10,20 @@ import { emitSessionVerified } from '../../lib/websocket';
 const TRANSFER_TOPIC = ethers.id('Transfer(address,address,uint256)');
 
 /**
- * EVM Listener (Ethereum & BSC) — POLLING MODE
+ * EVM Listener (Ethereum & BSC) — LAZY POLLING MODE
  *
- * Instead of subscribing to ALL Transfer events via WebSocket (which floods
- * the handler with every USDT transfer on the network), this listener polls
- * every few seconds and queries ONLY for Transfer events sent TO our active
- * deposit addresses. This reduces load by ~99.99%.
+ * Only creates the RPC provider when there are active sessions.
+ * Polls every 15 seconds using eth_getLogs filtered to our deposit addresses.
+ * Gracefully handles RPC errors without infinite retry spam.
  */
 export class EVMListener extends BaseListener {
     private provider: JsonRpcProvider | null = null;
     private pollInterval: NodeJS.Timeout | null = null;
     private lastBlock: number = 0;
-    private readonly POLL_INTERVAL_MS = 5000; // Poll every 5 seconds
+    private providerReady: boolean = false;
+    private consecutiveErrors: number = 0;
+    private readonly POLL_INTERVAL_MS = 15000; // 15 seconds
+    private readonly MAX_CONSECUTIVE_ERRORS = 5;
 
     constructor(chain: Chain) {
         super(chain);
@@ -34,52 +36,87 @@ export class EVMListener extends BaseListener {
         if (this.isRunning) return;
         this.isRunning = true;
 
+        this.log('Starting EVM listener (lazy polling mode)');
+
+        // Don't create provider yet — wait until there are active sessions
+        this.pollInterval = setInterval(() => {
+            this.poll().catch((err) => {
+                this.logError('Poll cycle error', { error: err.message });
+            });
+        }, this.POLL_INTERVAL_MS);
+    }
+
+    private async ensureProvider(): Promise<boolean> {
+        if (this.providerReady && this.provider) return true;
+
+        // Too many consecutive errors — back off
+        if (this.consecutiveErrors >= this.MAX_CONSECUTIVE_ERRORS) {
+            // Only retry every 5th call after max errors (effectively 75s backoff)
+            if (this.consecutiveErrors % 5 !== 0) {
+                this.consecutiveErrors++;
+                return false;
+            }
+        }
+
         const config = chainConfigs[this.chain];
-        // Use HTTP RPC (more reliable for polling than WebSocket)
-        const rpcUrl = config.rpcUrl || config.wsUrl?.replace('wss://', 'https://').replace('ws://', 'http://');
+        const rpcUrl = config.rpcUrl;
 
         if (!rpcUrl) {
             this.logError('No RPC URL configured');
-            return;
+            return false;
         }
 
         try {
-            this.provider = new JsonRpcProvider(rpcUrl);
-            this.lastBlock = await this.provider.getBlockNumber();
-            this.log('Starting EVM listener (polling mode)', {
-                rpcUrl: rpcUrl.replace(/\/[a-f0-9]{32,}/i, '/***'), // hide API keys
-                startBlock: this.lastBlock,
+            // Destroy old provider if exists
+            if (this.provider) {
+                try { await this.provider.destroy(); } catch { /* ignore */ }
+            }
+
+            // Create provider with static network to prevent auto-detect retries
+            this.provider = new JsonRpcProvider(rpcUrl, undefined, {
+                staticNetwork: true,
             });
 
-            // Start polling
-            this.pollInterval = setInterval(() => {
-                this.poll().catch((err) => {
-                    this.logError('Poll error', { error: err.message });
-                });
-            }, this.POLL_INTERVAL_MS);
+            // Test the connection with a simple call
+            this.lastBlock = await this.provider.getBlockNumber();
+            this.providerReady = true;
+            this.consecutiveErrors = 0;
+            this.log('RPC connected', {
+                rpcUrl: rpcUrl.replace(/\/[a-f0-9]{32,}/i, '/***'),
+                startBlock: this.lastBlock,
+            });
+            return true;
         } catch (error) {
-            this.logError('Failed to start', { error: (error as Error).message });
+            this.consecutiveErrors++;
+            if (this.consecutiveErrors <= 3) {
+                this.logWarn('RPC connection failed, will retry', {
+                    error: (error as Error).message,
+                    attempt: this.consecutiveErrors,
+                });
+            }
+            this.providerReady = false;
+            return false;
         }
     }
 
     private async poll(): Promise<void> {
+        // First check if there are active sessions for this chain
+        const activeAddresses = await getActiveDepositAddresses(this.chain);
+        if (activeAddresses.size === 0) {
+            return; // No active sessions — don't even connect to RPC
+        }
+
+        // Lazy-connect to provider
+        if (!await this.ensureProvider()) return;
         if (!this.provider) return;
 
         try {
             const currentBlock = await this.provider.getBlockNumber();
-            if (currentBlock <= this.lastBlock) return; // No new blocks
-
-            const activeAddresses = await getActiveDepositAddresses(this.chain);
-            if (activeAddresses.size === 0) {
-                this.lastBlock = currentBlock;
-                return; // No active sessions, skip
-            }
+            if (currentBlock <= this.lastBlock) return;
 
             const config = chainConfigs[this.chain];
 
             // Query Transfer logs only TO our deposit addresses
-            // Topic layout: Transfer(from, to, value)
-            // topic[0] = Transfer sig, topic[1] = from (any), topic[2] = to (our addresses)
             const paddedAddresses = Array.from(activeAddresses.keys()).map((addr) =>
                 ethers.zeroPadValue(addr, 32)
             );
@@ -87,11 +124,11 @@ export class EVMListener extends BaseListener {
             const logs = await this.provider.getLogs({
                 fromBlock: this.lastBlock + 1,
                 toBlock: currentBlock,
-                address: config.usdtContract, // Only official USDT contract
+                address: config.usdtContract,
                 topics: [
                     TRANSFER_TOPIC,
-                    null, // from: any
-                    paddedAddresses, // to: our deposit addresses only
+                    null,
+                    paddedAddresses,
                 ],
             });
 
@@ -100,8 +137,13 @@ export class EVMListener extends BaseListener {
             }
 
             this.lastBlock = currentBlock;
+            this.consecutiveErrors = 0;
         } catch (error) {
-            this.logError('Error polling', { error: (error as Error).message });
+            this.consecutiveErrors++;
+            this.providerReady = false; // Force reconnect next time
+            if (this.consecutiveErrors <= 3) {
+                this.logError('Error polling', { error: (error as Error).message });
+            }
         }
     }
 
@@ -110,7 +152,6 @@ export class EVMListener extends BaseListener {
         activeAddresses: Map<string, string>
     ): Promise<void> {
         try {
-            // Decode Transfer event
             const iface = new ethers.Interface([
                 'event Transfer(address indexed from, address indexed to, uint256 value)',
             ]);
@@ -135,7 +176,6 @@ export class EVMListener extends BaseListener {
                 sessionId,
             });
 
-            // Verify amount meets minimum
             if (amount < 1) {
                 this.logWarn('Transfer amount below required minimum', {
                     amount,
@@ -146,7 +186,6 @@ export class EVMListener extends BaseListener {
                 return;
             }
 
-            // Wait for confirmations
             const config = chainConfigs[this.chain];
             this.log('Waiting for confirmations', {
                 required: config.confirmations,
@@ -156,7 +195,7 @@ export class EVMListener extends BaseListener {
             const receipt = await this.provider!.waitForTransaction(
                 txHash,
                 config.confirmations,
-                120_000 // 2 minute timeout
+                120_000
             );
 
             if (!receipt || receipt.status === 0) {
@@ -164,7 +203,6 @@ export class EVMListener extends BaseListener {
                 return;
             }
 
-            // Mark session as verified
             const verified = await verifySession(sessionId, txHash, amount.toString());
 
             if (verified) {
@@ -173,7 +211,6 @@ export class EVMListener extends BaseListener {
                     status: 'verified',
                     tx_hash: txHash,
                 });
-
                 this.log('Session verified successfully', { sessionId, txHash });
             }
         } catch (error) {
@@ -190,9 +227,10 @@ export class EVMListener extends BaseListener {
             this.pollInterval = null;
         }
         if (this.provider) {
-            await this.provider.destroy();
+            try { await this.provider.destroy(); } catch { /* ignore */ }
             this.provider = null;
         }
+        this.providerReady = false;
         this.log('Stopped');
     }
 }

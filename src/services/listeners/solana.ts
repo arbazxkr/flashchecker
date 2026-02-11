@@ -23,7 +23,7 @@ import { emitSessionVerified } from '../../lib/websocket';
 export class SolanaListener extends BaseListener {
     private connection: Connection | null = null;
     private pollInterval: NodeJS.Timeout | null = null;
-    private readonly POLL_INTERVAL_MS = 5000;
+    private readonly POLL_INTERVAL_MS = 15000; // 15 seconds (avoid 429 on free RPCs)
 
     constructor() {
         super('SOLANA');

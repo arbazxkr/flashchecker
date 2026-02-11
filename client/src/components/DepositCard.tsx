@@ -145,6 +145,8 @@ export default function DepositCard({
 
         return () => {
             if (wsRef.current) {
+                // Remove onclose to prevent triggering fallback polling during cleanup
+                wsRef.current.onclose = null;
                 wsRef.current.close();
                 wsRef.current = null;
             }
