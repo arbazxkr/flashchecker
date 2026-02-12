@@ -5,6 +5,12 @@ export const metadata: Metadata = {
   title: "FlashChecker — Instant USDT Verification",
   description:
     "Verify USDT deposits instantly across Ethereum, BSC, Tron, and Solana.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
+  manifest: "/manifest.json",
 };
 
 // Inline script to handle chunk load errors after deploys
