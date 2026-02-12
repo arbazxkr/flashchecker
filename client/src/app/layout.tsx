@@ -7,9 +7,9 @@ export const metadata: Metadata = {
   description:
     "Verify USDT deposits instantly across Ethereum, BSC, Tron, and Solana.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/favicon.svg",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/apple-icon.png",
   },
   manifest: "/manifest.json",
   openGraph: {
