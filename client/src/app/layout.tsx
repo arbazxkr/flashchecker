@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import SWRegister from "@/components/SWRegister";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -78,6 +79,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <script dangerouslySetInnerHTML={{ __html: chunkErrorHandler }} />
+        <SWRegister />
       </head>
       <body>{children}</body>
     </html>
