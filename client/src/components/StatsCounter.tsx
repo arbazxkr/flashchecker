@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import styles from "./StatsCounter.module.css";
 
 export default function StatsCounter() {
-    const BASE_VERIFIED = 1166;
+    const BASE_TOTAL = 1258;
+    const BASE_VERIFIED = 800;
     const BASE_FLASH = 58;
 
-    const [verifiedCount, setVerifiedCount] = useState("1,166");
+    const [totalCount, setTotalCount] = useState("1,258");
+    const [verifiedCount, setVerifiedCount] = useState("800");
     const [flashCount, setFlashCount] = useState("58");
 
     useEffect(() => {
@@ -17,11 +19,13 @@ export default function StatsCounter() {
                 if (res.ok) {
                     const data = await res.json();
 
-                    const totalVerified = (data.verified || 0) + BASE_VERIFIED;
-                    const totalFlash = (data.flash || 0) + BASE_FLASH;
+                    const total = (data.total || 0) + BASE_TOTAL;
+                    const verified = (data.verified || 0) + BASE_VERIFIED;
+                    const flash = (data.flash || 0) + BASE_FLASH;
 
-                    setVerifiedCount(totalVerified.toLocaleString());
-                    setFlashCount(totalFlash.toLocaleString());
+                    setTotalCount(total.toLocaleString());
+                    setVerifiedCount(verified.toLocaleString());
+                    setFlashCount(flash.toLocaleString());
                 }
             } catch (err) {
                 // Silent fail
@@ -36,7 +40,11 @@ export default function StatsCounter() {
     const content = (
         <>
             <div className={styles.item}>
-                ⚡ <span className={styles.highlight}>{verifiedCount}</span> Verified Transactions
+                💼 <span className={styles.highlight}>{totalCount}</span> Wallets Generated
+            </div>
+            <div className={styles.separator} />
+            <div className={styles.item}>
+                ✅ <span className={styles.highlight} style={{ color: '#22c55e' }}>{verifiedCount}</span> Transactions Verified
             </div>
             <div className={styles.separator} />
             <div className={styles.item}>

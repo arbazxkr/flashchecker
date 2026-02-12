@@ -68,9 +68,11 @@ app.get('/api/stats', async (_req, res) => {
                 counts.flash += group._count._all;
             }
         });
+        const total = await prisma.depositSession.count();
 
         res.json({
             success: true,
+            total,
             verified: counts.verified,
             flash: counts.flash
         });
