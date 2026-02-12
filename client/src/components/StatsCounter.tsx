@@ -40,15 +40,15 @@ export default function StatsCounter() {
     const content = (
         <>
             <div className={styles.item}>
-                💼 <span className={styles.highlight}>{totalCount}</span> Wallets Generated
+                💼 <span className={styles.highlight}>{totalCount}</span>{" "}Wallets Generated
             </div>
             <div className={styles.separator} />
             <div className={styles.item}>
-                ✅ <span className={styles.highlight} style={{ color: '#22c55e' }}>{verifiedCount}</span> Transactions Verified
+                ✅ <span className={styles.highlight} style={{ color: '#22c55e' }}>{verifiedCount}</span>{" "}Transactions Verified
             </div>
             <div className={styles.separator} />
             <div className={styles.item}>
-                ⚠️ <span className={styles.highlight} style={{ color: '#ef4444' }}>{flashCount}</span> Fake Transactions Detected
+                ⚠️ <span className={styles.highlight} style={{ color: '#ef4444' }}>{flashCount}</span>{" "}Fake Transactions Detected
             </div>
             <div className={styles.separator} />
         </>
