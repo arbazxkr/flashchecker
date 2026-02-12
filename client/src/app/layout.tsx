@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://flashchecker.vercel.app'), // Replace with your actual domain if different
+  metadataBase: new URL('https://flashchecker.in'), // Replace with your actual domain if different
   title: "FlashChecker — Instant USDT Verification",
   description:
     "Verify USDT deposits instantly across Ethereum, BSC, Tron, and Solana.",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "FlashChecker — Instant USDT Verification",
     description: "Verify USDT deposits instantly across Ethereum, BSC, Tron, and Solana.",
-    url: 'https://flashchecker.vercel.app',
+    url: 'https://flashchecker.in',
     siteName: 'FlashChecker',
     images: [
       {
@@ -34,6 +34,13 @@ export const metadata: Metadata = {
     description: "Verify USDT deposits instantly across Ethereum, BSC, Tron, and Solana.",
     images: ['/opengraph-image.png'],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 // Inline script to handle chunk load errors after deploys
