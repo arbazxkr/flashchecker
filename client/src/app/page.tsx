@@ -7,6 +7,7 @@ import DepositCard from "@/components/DepositCard";
 import VerifiedCard from "@/components/VerifiedCard";
 import FlashCard from "@/components/FlashCard";
 import ExpiredCard from "@/components/ExpiredCard";
+import StatsCounter from "@/components/StatsCounter";
 import Toast from "@/components/Toast";
 import styles from "./page.module.css";
 
@@ -101,6 +102,7 @@ export default function Home() {
       <Header connected={connected} />
 
       <main className={styles.main}>
+        <StatsCounter />
         {step === "select" && (
           <ChainSelector
             onSelect={handleChainSelect}

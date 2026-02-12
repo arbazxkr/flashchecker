@@ -1,0 +1,56 @@
+.marqueeContainer {
+    width: 100%;
+    max-width: 600px;
+    /* Limit width on desktop */
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    padding: 8px 0;
+    margin: 20px auto 10px auto;
+    position: relative;
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.track {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    gap: 30px;
+    /* Space between items */
+    animation: scroll 20s linear infinite;
+    width: max-content;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #d1d5db;
+    font-weight: 500;
+}
+
+.highlight {
+    color: #4ade80;
+    /* Green */
+    font-weight: 700;
+}
+
+.separator {
+    width: 4px;
+    height: 4px;
+    background: #555;
+    border-radius: 50%;
+    margin: 0 10px;
+}
+
+@keyframes scroll {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
+}

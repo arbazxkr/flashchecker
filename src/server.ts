@@ -45,6 +45,16 @@ app.use('/api', apiRateLimiter);
 // Routes
 app.use('/api', sessionRoutes);
 
+// Stats Endpoint
+app.get('/api/stats', async (_req, res) => {
+    try {
+        const count = await prisma.session.count();
+        res.json({ success: true, count });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to fetch stats' });
+    }
+});
+
 // Serve index.html for all non-API, non-static routes (SPA fallback)
 app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/ws')) {
