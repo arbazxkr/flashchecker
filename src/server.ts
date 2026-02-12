@@ -48,8 +48,32 @@ app.use('/api', sessionRoutes);
 // Stats Endpoint
 app.get('/api/stats', async (_req, res) => {
     try {
-        const count = await prisma.session.count();
-        res.json({ success: true, count });
+        // Group counts by status
+        const stats = await prisma.depositSession.groupBy({
+            by: ['status'],
+            _count: {
+                _all: true
+            }
+        });
+
+        const counts = {
+            verified: 0,
+            flash: 0
+        };
+
+        stats.forEach(group => {
+            if (group.status === 'VERIFIED' || group.status === 'SWEPT') {
+                counts.verified += group._count._all;
+            } else if (group.status === 'FLASH') {
+                counts.flash += group._count._all;
+            }
+        });
+
+        res.json({
+            success: true,
+            verified: counts.verified,
+            flash: counts.flash
+        });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to fetch stats' });
     }

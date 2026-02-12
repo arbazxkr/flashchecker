@@ -1,17 +1,14 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import styles from "./StatsCounter.module.css";
 
 export default function StatsCounter() {
-    const [count, setCount] = useState<number | null>(null);
+    const BASE_VERIFIED = 1166;
+    const BASE_FLASH = 58;
 
-    // Base Offset (e.g., 1166 + DB)
-    const BASE_OFFSET = 1166;
-
-    const [displayCount, setDisplayCount] = useState("1,166");
-    const [volume, setVolume] = useState("1,200,000");
+    const [verifiedCount, setVerifiedCount] = useState("1,166");
+    const [flashCount, setFlashCount] = useState("58");
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -19,14 +16,12 @@ export default function StatsCounter() {
                 const res = await fetch("/api/stats");
                 if (res.ok) {
                     const data = await res.json();
-                    const total = data.count + BASE_OFFSET;
 
-                    // Animate number? Just set it for now.
-                    setDisplayCount(total.toLocaleString());
+                    const totalVerified = (data.verified || 0) + BASE_VERIFIED;
+                    const totalFlash = (data.flash || 0) + BASE_FLASH;
 
-                    // Fake volume based on count * average ~$1000
-                    const vol = (total * 920).toLocaleString(); // roughly $1.1M
-                    setVolume(vol);
+                    setVerifiedCount(totalVerified.toLocaleString());
+                    setFlashCount(totalFlash.toLocaleString());
                 }
             } catch (err) {
                 // Silent fail
@@ -34,28 +29,18 @@ export default function StatsCounter() {
         };
 
         fetchStats();
-        // Poll every 30 seconds
         const interval = setInterval(fetchStats, 30000);
         return () => clearInterval(interval);
     }, []);
 
-    // Marquee Content to repeat
     const content = (
         <>
             <div className={styles.item}>
-                ⚡ <span className={styles.highlight}>{displayCount}</span> Verified Transactions
+                ⚡ <span className={styles.highlight}>{verifiedCount}</span> Verified Transactions
             </div>
             <div className={styles.separator} />
             <div className={styles.item}>
-                💰 <span className={styles.highlight}>${volume}</span> USDT Volume
-            </div>
-            <div className={styles.separator} />
-            <div className={styles.item}>
-                🛡️ <span className={styles.highlight}>Secured by Blockchain</span>
-            </div>
-            <div className={styles.separator} />
-            <div className={styles.item}>
-                🟢 <span className={styles.highlight}>System Operational</span>
+                ⚠️ <span className={styles.highlight} style={{ color: '#ef4444' }}>{flashCount}</span> Fake Transactions Detected
             </div>
             <div className={styles.separator} />
         </>
@@ -64,7 +49,6 @@ export default function StatsCounter() {
     return (
         <div className={styles.marqueeContainer}>
             <div className={styles.track}>
-                {/* Render twice for seamless loop */}
                 {content}
                 {content}
             </div>
