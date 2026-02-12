@@ -19,9 +19,10 @@ export const metadata: Metadata = {
     siteName: 'FlashChecker',
     images: [
       {
-        url: '/favicon.svg', // Ideally use a 1200x630 PNG here
-        width: 800,
-        height: 600,
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'FlashChecker Preview',
       },
     ],
     locale: 'en_US',
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "FlashChecker — Instant USDT Verification",
     description: "Verify USDT deposits instantly across Ethereum, BSC, Tron, and Solana.",
-    images: ['/favicon.svg'],
+    images: ['/opengraph-image.png'],
   },
 };
 
