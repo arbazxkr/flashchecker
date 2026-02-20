@@ -31,15 +31,15 @@ graph TD
     API -->|Generate HD Address| WalletService[HD Wallet Service]:::server
     API -->|Save Pending| DB[(PostgreSQL)]:::db
     
-    API -->> Client: Return Deposit Address & Socket ID
+    API -->|Return Deposit Address & Socket ID| Client
 
     Client -->|Connect with ID| WS[WebSocket Server]:::server
     
-    Node[Blockchain Nodes (RPC/WSS)]:::chain -->|Listen for Transfers| Listener[Chain Listeners]:::server
+    Node[Blockchain Nodes]:::chain -->|Listen for Transfers| Listener[Chain Listeners]:::server
     Listener -->|Update Confirmations| DB
     
     Listener -->|Required Confirmations Met| WS
-    WS -->> Client: "session_verified"
+    WS -->|emit: session_verified| Client
 
     Listener -->|Mark Verified| Sweeper[Sweeper Daemon]:::server
     Sweeper -->|Transfer Funds to Master| Node
