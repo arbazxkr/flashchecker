@@ -1,0 +1,14 @@
+{
+    "name": "FlashChecker",
+    "short_name": "FlashChecker",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "192x192 512x512",
+            "type": "image/svg+xml"
+        }
+    ],
+    "theme_color": "#000000",
+    "background_color": "#000000",
+    "display": "standalone"
+}

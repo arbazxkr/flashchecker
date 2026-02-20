@@ -3,8 +3,7 @@ import { ethers } from 'ethers';
 import { env } from '../src/config/env';
 
 const TARGETS = [
-    '0x063B9eCa915f5e9725cfa68662ed5d2acB408b4F',
-    '0x095ae074B60E9aED7e6CA5FcAd282D03dc729cC9'
+    '0x9e9DD7cBF4f55C6a2463B6822E638Ab1c3D7f9c6'
 ];
 
 async function main() {
@@ -12,7 +11,7 @@ async function main() {
 
     // Providers (Simpler Public RPCs to avoid hang)
     const bscProvider = new ethers.JsonRpcProvider('https://bsc-dataseed.binance.org/');
-    const ethProvider = new ethers.JsonRpcProvider('https://rpc.ankr.com/eth');
+    const ethProvider = new ethers.JsonRpcProvider('https://cloudflare-eth.com');
 
     // Contracts
     const USDT_BSC = '0x55d398326f99059fF775485246999027B3197955';
